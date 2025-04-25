@@ -4,8 +4,17 @@ import { catchAsync } from "./error.middleware.js";
 import { User } from "../models/user.model.js";
 
 export const isAuthenticated = catchAsync(async (req, res, next) => {
-  // Check if token exists in cookies
-  const token = req.cookies.token;
+  let token;
+
+  // Check for token in cookie
+  if (req.cookies.token) {
+    token = req.cookies.token;
+  }
+  // Check for token in Authorization header
+  else if (req.headers.authorization?.startsWith("Bearer ")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
   if (!token) {
     throw new AppError(
       "You are not logged in. Please log in to get access.",
@@ -14,17 +23,16 @@ export const isAuthenticated = catchAsync(async (req, res, next) => {
   }
 
   try {
-    // Verify token
     const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
 
-    // Add user ID to request
-    req.id = decoded.userId;
-    const user = await User.findById(req.id);
     if (!user) {
       throw new AppError("User not found", 404);
     }
 
+    // Attach user to request
     req.user = user;
+    req.id = user._id;
 
     next();
   } catch (error) {

@@ -51,28 +51,26 @@ app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(cookieParser());
 
 // CORS Configuration
-// CORS Configuration
 app.use(
   cors({
     origin: function (origin, callback) {
       const allowedOrigins = [
-        process.env.CLIENT_URL?.replace(/\/$/, ""), // Remove trailing slash if present
+        process.env.CLIENT_URL?.replace(/\/$/, ""),
+        "https://upskillmore.netlify.app", // Add your Netlify domain explicitly
         "http://localhost:5173",
         "http://localhost:3000",
       ];
 
-      // Allow requests with no origin (like mobile apps or curl requests)
+      // Allow requests with no origin
       if (!origin) {
         return callback(null, true);
       }
 
-      // Check if the origin is in our allowedOrigins
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      // If origin doesn't match, reject the request
-      return callback(new Error("Not allowed by CORS"));
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
@@ -85,8 +83,14 @@ app.use(
       "Origin",
       "Accept",
     ],
+    exposedHeaders: ["set-cookie"],
   })
 );
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 // API Routes
 app.use("/api/v1/media", mediaRoute);
