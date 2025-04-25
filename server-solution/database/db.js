@@ -46,6 +46,10 @@ class DatabaseConnection {
                 serverSelectionTimeoutMS: 5000,
                 socketTimeoutMS: 45000,
                 family: 4, // Use IPv4
+                ssl: true,
+                tls: true,
+                tlsAllowInvalidCertificates: false,
+                tlsAllowInvalidHostnames: false
             };
 
             if (process.env.NODE_ENV === 'development') {
