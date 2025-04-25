@@ -36,6 +36,7 @@ export const isAuthenticated = catchAsync(async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.error("Token verification error:", error);
     if (error.name === "JsonWebTokenError") {
       throw new AppError("Invalid token. Please log in again.", 401);
     }
